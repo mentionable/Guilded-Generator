@@ -11,7 +11,7 @@
 <br/>
 <div align="center">
   <a href="https://github.com/HellishEyes/Guilded-Generator">
-    <img src="https://cdn.discordapp.com/attachments/873013158749548574/912595778122436618/Guilded_Logomark_Black.png" alt="Logo" width="120" height="120">
+    <img src="https://cdn.discordapp.com/attachments/873013158749548574/912595778122436618/Guilded_Logomark_Black.png" alt="Logo" width="160" height="160">
   </a>
   
   <h2 align="center">Guilded Generator</h3>
