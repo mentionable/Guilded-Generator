@@ -33,7 +33,6 @@ class GuildedGenerator:
         self.create_account(email)
 
     def create_account(self, email):
-        global COUNT
         try:
             headers = {
                 'authority'           : 'www.guilded.gg',
