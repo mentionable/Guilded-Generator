@@ -8,15 +8,14 @@ import random
 import threading
 import argparse
 
-COUNT = 0
-
 class GuildedGenerator:
     def __init__(self, username, invite, password, threads):
         self.username = username
         self.password = password
         self.invite = invite
         self.threads = threads
-
+        
+        self.created = 0
         self.proxies = [_ for _ in open('data/proxies.txt').read().rsplit('\n')]
         self.session = requests.Session()
 
@@ -70,8 +69,8 @@ class GuildedGenerator:
             response = self.session.post('https://www.guilded.gg/api/users', params='type=email', 
                                           headers=headers, proxies=self.proxy(), json=payload)
             if response.status_code in (200, 201, 203, 204):
-                COUNT += 1
-                os.system('title Guilded Generator - Created: %s' % COUNT)
+                self.created += 1
+                os.system('title Guilded Generator - Created: %s' % self.created)
                 print('[$] Created Account: %s' % response.json()['user']['name'])
 
                 payload = {'getMe' : True, 'email' : email, 'password' : self.password}
