@@ -1,115 +1,143 @@
-import requests
+import multiprocessing
 import os, sys
-import json 
-import base64
-import time
+import ctypes
+import requests
+import itertools 
 import string
 import random
-import threading
-import argparse
+import threading 
+from lib import arguments
+
 
 class GuildedGenerator:
-    def __init__(self, username, invite, password, threads):
-        self.username = username
-        self.password = password
-        self.invite = invite
-        self.threads = threads
-        
+    def __init__(self, arguments):
+        self.args = arguments
         self.created = 0
-        self.proxies = [_ for _ in open('data/proxies.txt').read().rsplit('\n')]
         self.session = requests.Session()
+        self.proxies = itertools.cycle(
+            [_ for _ in open("data/proxies.txt").read().rsplit()]
+        )
 
-    def proxy(self):
-        return {'https' : 'http://%s' % random.choice(self.proxies), 
-                'http' : 'http://%s' % random.choice(self.proxies)}
+    def proxy(self) -> dict:
+        proxy_dict = {"http" : f"http://{next(self.proxies)}", "https" : f"http://{next(self.proxies)}"}
+        return None if self.args.proxies.lower() == "n" else proxy_dict
 
-    def start(self):
-        for index in range(self.threads):
-            email = ''.join(random.choice(string.ascii_letters) 
-                         for _ in range(7)) + '@gmail.com'
-            threading.Thread(target=self.thread_task, args=(email,)).start()
+    def randomstr(self, amount: int) -> str:
+        _string = "".join(random.choice(string.ascii_letters) for _ in range(amount))
+        return _string
 
-    def thread_task(self, email):
-        self.create_account(email)
+    def headers(self) -> dict:
+        return {
+            "guilded-client-id" : "f1a162c9-8992-468c-afdd-de50fd3fd428",
+            "guilded-stag" :      "90156f8d1cc4886a65e92aded2861869",
+            "guilded-device-id" : "537b5c96c662685a3c6a9cf97b15fafe68ca4eb5141254ac908d08f4460218cc"
+        }
 
-    def create_account(self, email):
+    def update_title(self):
+        while self.created != 0:
+            if os.name == "nt":
+                ctypes.windll.kernel32.SetConsoleTitleW(f"Total Created: {self.created}")
+            elif os.name == "posix":
+                print(f"\x1b]2;Total Created: {self.created}\x07")
+
+
+    def joinserver(self, invite, cookie):
         try:
-            headers = {
-                'authority'           : 'www.guilded.gg',
-                'method'              : 'POST',
-                'path'                : '/api/users?type=email',
-                'scheme'              : 'https',
-                'accept'              : 'application/json, text/javascript, */*; q=0.01',
-                'accept-encoding'     : 'gzip, deflate, br',
-                'accept-language'     : 'en-US,en;q=0.9',
-                'content-type'        : 'application/json',
-                'origin'              : 'https://www.guilded.gg',
-                'sec-ch-ua'           : 'Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96',
-                'sec-ch-ua-mobile'    : '?0',
-                'sec-ch-ua-platform'  : 'Windows',
-                'sec-fetch-dest'      : 'empty',
-                'sec-fetch-mode'      : 'cors',
-                'sec-fetch-site'      : 'same-origin',
-                'user-agent'          : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
-                'x-requested-with'    : 'XMLHttpRequest',
-                'guilded-client-id'   : 'f1a162c9-8992-468c-afdd-de50fd3fd428',
-                'guilded-stag'        : '90156f8d1cc4886a65e92aded2861869',
-                'guilded-device-id'   : '537b5c96c662685a3c6a9cf97b15fafe68ca4eb5141254ac908d08f4460218cc',
-            }
+            proxies = self.proxy()
+            headers = self.headers()
+            headers["cookie"] = f"hmac_signed_session={cookie}"
+
+            response = self.session.put(f"https://www.guilded.gg/api/invites/{invite}", headers=headers, proxies=proxies)
+            
+            if response.status_code in (200, 203, 204):
+                print("[anti.sh] Joined Server!")
+            elif response.status_code in (400, 403, 404):
+                print("[anti.sh] Error Joining Server.")
+
+        except requests.exceptions.RequestException:
+            print("[anti.sh] Request Error!")
+
+
+    def login(self, email, password):
+        try:
+            headers = self.headers()
+            proxies = self.proxy()
 
             payload = {
-                'extraInfo' : {'platform' : 'desktop'},
-                'email'     : email,
-                'fullName'  : self.username,
-                'name'      : self.username,
-                'password'  : self.password
+                "getMe"    : True,
+                "email"    : email,
+                "password" : password
+            }
+            
+            response = self.session.post("https://www.guilded.gg/api/login", json=payload, headers=None, proxies=proxies)
+
+            if response.status_code in (200, 203, 204):
+                cookie = response.cookies['hmac_signed_session']
+
+                print(f"[anti.sh] Fetched Cookie: {cookie[:100]}...")
+                open("data/cookies.txt", "a").write(cookie+'\n')
+                self.joinserver(self.args.invite, cookie)
+
+            elif response.status_code in (400, 403, 404):
+                print("[anti.sh] Error logging into account: ", end="")
+                print(response.json())
+                
+        except requests.exceptions.RequestException:
+            print("[anti.sh] Request Error!")
+
+
+    def register(self, username, password, email):
+        try:
+            headers = self.headers()
+            proxies = self.proxy()
+
+            payload = {
+                "extraInfo" : {"platform" : "desktop"},
+                "name"      : username,
+                "fullName"  : username,
+                "password"  : password,
+                "email"     : email
             }
 
-            response = self.session.post('https://www.guilded.gg/api/users', params='type=email', 
-                                          headers=headers, proxies=self.proxy(), json=payload)
-            if response.status_code in (200, 201, 203, 204):
+            response = self.session.post("https://www.guilded.gg/api/users", params="type=email", headers=headers, proxies=proxies, json=payload)
+
+            if response.status_code in (200, 203, 204):
+                print("[anti.sh] Account Created!")
                 self.created += 1
-                os.system('title Guilded Generator - Created: %s' % self.created)
-                print('[$] Created Account: %s' % response.json()['user']['name'])
+                self.login(email, password)
+                
+            elif response.status_code in (400, 403, 404):
+                print("[anti.sh] Error Creating Account.")
 
-                payload = {'getMe' : True, 'email' : email, 'password' : self.password}
-                login = self.session.post('https://www.guilded.gg/api/login', json=payload, proxies=self.proxy())
+        except requests.exceptions.RequestException:
+            print("[anti.sh] Request Error!")
 
-                if login.status_code in (200, 201, 203, 204):
-                    cookie = login.cookies['hmac_signed_session']
-                    print('[$] Fetched Cookie: %s' % cookie[:50] + '...')
-                    open('data/cookies.txt', 'a').write(cookie+'\n')
-
-                    headers = {'cookie' : f'hmac_signed_session={cookie}'}
-                    invite = self.session.put(f'https://www.guilded.gg/api/invites/{self.invite}', headers=headers, proxies=self.proxy())
-
-                    if invite.status_code in (200, 201, 203, 204): 
-                        print(f'[$] Joined Server: {cookie[:50]}...')
-
-                    else: print('[$] Error Joining Server')
-                elif response.status_code in (400, 401, 403, 404): print('[$] Error Fetching Cookie / Logging in')
-            elif response.status_code in (400, 401, 403, 404): print('[$] Error Creating Account')
-        except requests.exceptions.RequestException as e: 
-            print('[$] Request Exception Occured: %s' % str(e)[:30])
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--username', metavar='', required=True, type=str, help='Generated account usernames')
-    parser.add_argument('-p', '--password', metavar='', required=False, type=str, help='Generated account passwords')
-    parser.add_argument('-i', '--invite', metavar='', required=True, type=str, help='Invite to guilded.gg server the bots will join')
-    parser.add_argument('-t', '--threads', metavar='', required=True, type=int, help='Amount of threading while creating accounts')
-    args = parser.parse_args()
-
-    if args.password == None:
-        args.password = ''.join(random.choice(string.ascii_letters) 
-                               for _ in range(10))
-
-    generator = GuildedGenerator(
-        username=args.username,
-        password=args.password,
-        invite=args.invite,
-        threads=args.threads
-    )
-    generator.start()
     
+    def worker_thread(self, username, password, email):
+        threads = [
+            threading.Thread(
+                target=self.register,
+                args=(username, password, email)
+            )
+        for index in range(self.args.threads)]
+        for thread in threads: thread.start()
+
+    def start(self):
+        threading.Thread(target=self.update_title).start()
+
+        workers = [
+            multiprocessing.Process(
+                target=self.worker_thread,
+                args=(self.args.username, 
+                      self.args.password,
+                      self.randomstr(amount=15) + "@gmail.com")
+            )
+        for index in range(self.args.workers)]
+        for worker in workers: worker.start()
+
+
+if __name__ == "__main__":
+    generator = GuildedGenerator(
+        arguments.arg_parser()
+        )
+    generator.start()
