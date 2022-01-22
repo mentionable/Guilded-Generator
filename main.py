@@ -48,7 +48,7 @@ class GuildedGenerator:
             headers["cookie"] = f"hmac_signed_session={cookie}"
 
             response = self.session.put(f"https://www.guilded.gg/api/invites/{invite}", headers=headers, proxies=proxies)
-            
+
             if response.status_code in (200, 203, 204):
                 print("[anti.sh] Joined Server!")
             elif response.status_code in (400, 403, 404):
@@ -62,12 +62,7 @@ class GuildedGenerator:
         try:
             headers = self.headers()
             proxies = self.proxy()
-
-            payload = {
-                "getMe"    : True,
-                "email"    : email,
-                "password" : password
-            }
+            payload = {"getMe" : True, "email" : email, "password" : password}
             
             response = self.session.post("https://www.guilded.gg/api/login", json=payload, headers=None, proxies=proxies)
 
@@ -105,7 +100,7 @@ class GuildedGenerator:
                 print("[anti.sh] Account Created!")
                 self.created += 1
                 self.login(email, password)
-                
+
             elif response.status_code in (400, 403, 404):
                 print("[anti.sh] Error Creating Account.")
 
