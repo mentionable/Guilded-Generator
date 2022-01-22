@@ -20,22 +20,40 @@
     An account generator for guilded.gg that I made a while back and decided to bring back up
     <br />
     <br />
-    <img src="https://img.shields.io/badge/Version-1.0.0-7DCDE3?style=for-the-badge" alt="Version">
+    <img src="https://img.shields.io/badge/Version-2.0.0-7DCDE3?style=for-the-badge" alt="Version">
   </p>
 </div>
   
----------------------------------------
 
-## Usage
+
+# 🛠️ Installation
+### Windows
 ```
-usage: main.py [-h] -u  [-p] -i  -t
-
-optional arguments:
-  -h, --help        show this help message and exit
-  -u , --username   Generated account usernames
-  -p , --password   Generated account passwords
-  -i , --invite     Invite to guilded.gg server the bots will join
-  -t , --threads    Amount of threading while creating accounts
+py -m pip install -r requirements.txt
+```
+### Linux
+```
+python3 -m pip install -r requirements.txt
 ```
 
----------------------------------------
+# ⚔️ Usage
+### Example
+```
+python main.py --username Mentionable --password Hax0r1337 --threads 5 --workers 50 --invite ENZ7nGoE --proxies N
+```
+### Help
+```
+usage: main.py [-h] [--username] [--password] --invite  [--threads] [--workers] --proxies
+
+options:
+  -h, --help   show this help message and exit
+  --username   Generated account's username.
+  --password   Password of the accounts.
+  --invite     Server invite the accounts join on creation.
+  --threads    Amount of threading while creating accounts.
+  --workers    Amount of workers while creating accounts.
+  --proxies    Choose to use proxies or not ("y", "n")
+```
+
+# 📝 Notes
+### This version hasn't been fully tested & I'm not sure it's completely functional. If there is a problem please leave an issue [here](https://github.com/mentionable/Guilded-Generator/issues).
