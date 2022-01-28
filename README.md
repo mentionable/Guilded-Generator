@@ -1,16 +1,16 @@
 <div id="top"></div>
 <p align="center">
-  <img src="https://img.shields.io/github/contributors/HellishEyes/Guilded-Generator.svg?style=for-the-badge"/>
-  <img src="https://img.shields.io/github/forks/HellishEyes/Guilded-Generator.svg?style=for-the-badge"/>
-  <img src="https://img.shields.io/github/stars/HellishEyes/Guilded-Generator.svg?style=for-the-badge"/>
-  <img src="https://img.shields.io/github/issues/HellishEyes/Guilded-Generator.svg?style=for-the-badge"/>
+  <img src="https://img.shields.io/github/contributors/mentionable/Guilded-Generator.svg?style=for-the-badge"/>
+  <img src="https://img.shields.io/github/forks/mentionable/Guilded-Generator.svg?style=for-the-badge"/>
+  <img src="https://img.shields.io/github/stars/mentionable/Guilded-Generator.svg?style=for-the-badge"/>
+  <img src="https://img.shields.io/github/issues/mentionable/Guilded-Generator.svg?style=for-the-badge"/>
 </p>
   
 ---------------------------------------
   
 <br/>
 <div align="center">
-  <a href="https://github.com/HellishEyes/Guilded-Generator">
+  <a href="https://github.com/mentionable/Guilded-Generator">
     <img src="https://cdn.discordapp.com/attachments/873013158749548574/912595778122436618/Guilded_Logomark_Black.png" alt="Logo" width="160" height="160">
   </a>
   
